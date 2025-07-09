@@ -115,13 +115,41 @@ export default {
 				'pulse-glow': {
 					'0%, 100%': { boxShadow: '0 0 20px hsl(var(--primary) / 0.3)' },
 					'50%': { boxShadow: '0 0 40px hsl(var(--primary) / 0.6)' }
+				},
+				'temp-float': {
+					'0%, 100%': { 
+						transform: 'translateY(0px) scale(1)', 
+						opacity: '0.6' 
+					},
+					'50%': { 
+						transform: 'translateY(-15px) scale(1.1)', 
+						opacity: '0.8' 
+					}
+				},
+				'temp-pulse': {
+					'0%, 100%': { 
+						transform: 'scale(1)', 
+						boxShadow: '0 0 20px var(--temp-primary, hsl(var(--primary))) / var(--temp-glow-intensity, 0.3))' 
+					},
+					'50%': { 
+						transform: 'scale(1.05)', 
+						boxShadow: '0 0 40px var(--temp-primary, hsl(var(--primary))) / calc(var(--temp-glow-intensity, 0.3) * 2))' 
+					}
+				},
+				'gradient-shift': {
+					'0%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' },
+					'100%': { backgroundPosition: '0% 50%' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'float': 'float 3s ease-in-out infinite',
-				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'temp-float': 'temp-float calc(3s / var(--temp-animation-speed, 1)) ease-in-out infinite',
+				'temp-pulse': 'temp-pulse calc(2s / var(--temp-animation-speed, 1)) ease-in-out infinite',
+				'gradient-shift': 'gradient-shift calc(8s / var(--temp-animation-speed, 1)) ease-in-out infinite'
 			}
 		}
 	},

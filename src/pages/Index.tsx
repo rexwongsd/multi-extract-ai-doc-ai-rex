@@ -6,9 +6,10 @@ import { LanguageSwitcher, type Language } from "@/components/LanguageSwitcher";
 import { FileUpload } from "@/components/FileUpload";
 import { ProcessingForm } from "@/components/ProcessingForm";
 import { ResultsTable } from "@/components/ResultsTable";
-import { Brain, FileText, Zap, Globe, Shield, Download, Moon, Sun } from "lucide-react";
+import { Brain, FileText, Zap, Globe, Shield, Download, Moon, Sun, Thermometer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { processFiles, type ExtractedData, type ProcessingProgress } from "@/utils/fileProcessor";
+import { useCPUTemperature } from "@/hooks/useCPUTemperature";
 import heroImage from "@/assets/hero-bg.jpg";
 const translations = {
   en: {
@@ -68,6 +69,7 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState<'upload' | 'process' | 'results'>('upload');
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const temperatureData = useCPUTemperature();
 
   useEffect(() => {
     // Check for saved theme preference or default to light mode
@@ -78,6 +80,19 @@ const Index = () => {
     setIsDarkMode(shouldUseDark);
     document.documentElement.classList.toggle('dark', shouldUseDark);
   }, []);
+
+  // Update CSS variables for temperature-based colors
+  useEffect(() => {
+    if (!isDarkMode) { // Only apply temperature colors in light mode
+      const root = document.documentElement;
+      root.style.setProperty('--temp-background', temperatureData.colors.background);
+      root.style.setProperty('--temp-primary', temperatureData.colors.primary);
+      root.style.setProperty('--temp-accent', temperatureData.colors.accent);
+      root.style.setProperty('--temp-foreground', temperatureData.colors.foreground);
+      root.style.setProperty('--temp-animation-speed', temperatureData.animationIntensity.toString());
+      root.style.setProperty('--temp-glow-intensity', (temperatureData.temperature / 90 * 0.8 + 0.2).toString());
+    }
+  }, [temperatureData, isDarkMode]);
 
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
@@ -148,9 +163,40 @@ const Index = () => {
     title: t.features.format,
     description: "Automatic validation and formatting of Malaysian phone numbers"
   }];
-   return <div className="min-h-screen bg-gradient-secondary relative overflow-hidden">
-      {/* Global Background Animation */}
-      <div className="fixed inset-0 bg-gradient-primary opacity-5 animate-pulse-glow pointer-events-none"></div>
+   return <div 
+      className="min-h-screen relative overflow-hidden" 
+      style={{ 
+        background: isDarkMode ? 'hsl(var(--background))' : 'var(--temp-background, var(--gradient-secondary))',
+        color: isDarkMode ? 'hsl(var(--foreground))' : 'var(--temp-foreground, hsl(var(--foreground)))',
+        backgroundSize: '400% 400%'
+      }}
+    >
+      {/* Global Animated Background */}
+      <div 
+        className="fixed inset-0 opacity-20 animate-gradient-shift pointer-events-none"
+        style={{
+          background: isDarkMode 
+            ? 'linear-gradient(-45deg, hsl(var(--primary)/0.1), hsl(var(--accent)/0.1), hsl(var(--primary)/0.05), hsl(var(--accent)/0.05))'
+            : 'var(--temp-background, var(--gradient-primary))',
+          backgroundSize: '400% 400%'
+        }}
+      ></div>
+
+      {/* Temperature Indicator */}
+      {!isDarkMode && (
+        <div className="fixed top-20 right-4 z-50 bg-white/10 backdrop-blur-sm rounded-lg p-3 text-sm">
+          <div className="flex items-center gap-2">
+            <Thermometer className="h-4 w-4" />
+            <span>CPU: {Math.round(temperatureData.temperature)}°C</span>
+            <div 
+              className={`w-3 h-3 rounded-full animate-temp-pulse ${
+                temperatureData.temperatureRange === 'cool' ? 'bg-green-400' :
+                temperatureData.temperatureRange === 'medium' ? 'bg-yellow-400' : 'bg-red-400'
+              }`}
+            />
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -178,18 +224,48 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-hero opacity-65 animate-pulse-glow"></div>
+        {/* Dynamic Animated Background */}
+        <div 
+          className="absolute inset-0 opacity-30 animate-temp-pulse"
+          style={{
+            background: isDarkMode ? 'hsl(var(--primary)/0.1)' : 'var(--temp-background, var(--gradient-hero))'
+          }}
+        ></div>
         <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(rgba(240, 245, 255, 0.6), rgba(240, 245, 255, 0.6)), url(${heroImage})`,
+          backgroundImage: `linear-gradient(rgba(240, 245, 255, ${isDarkMode ? '0.1' : '0.4'}), rgba(240, 245, 255, ${isDarkMode ? '0.1' : '0.4'})), url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}></div>
         
-        {/* Floating Animation Elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-32 h-32 bg-accent/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-primary-glow/25 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }}></div>
+        {/* Dynamic Floating Animation Elements */}
+        <div 
+          className="absolute top-20 left-10 w-20 h-20 rounded-full blur-xl animate-temp-float"
+          style={{ 
+            backgroundColor: isDarkMode ? 'hsl(var(--primary)/0.2)' : 'var(--temp-primary, hsl(var(--primary)))/0.3',
+            animationDelay: '0s' 
+          }}
+        ></div>
+        <div 
+          className="absolute top-40 right-20 w-32 h-32 rounded-full blur-2xl animate-temp-float" 
+          style={{ 
+            backgroundColor: isDarkMode ? 'hsl(var(--accent)/0.15)' : 'var(--temp-accent, hsl(var(--accent)))/0.25',
+            animationDelay: '1s' 
+          }}
+        ></div>
+        <div 
+          className="absolute bottom-20 left-1/4 w-24 h-24 rounded-full blur-xl animate-temp-float" 
+          style={{ 
+            backgroundColor: isDarkMode ? 'hsl(var(--primary-glow)/0.2)' : 'var(--temp-primary, hsl(var(--primary-glow)))/0.35',
+            animationDelay: '2s' 
+          }}
+        ></div>
+        <div 
+          className="absolute top-1/2 right-1/3 w-16 h-16 rounded-full blur-lg animate-temp-float" 
+          style={{ 
+            backgroundColor: isDarkMode ? 'hsl(var(--accent)/0.1)' : 'var(--temp-accent, hsl(var(--accent)))/0.2',
+            animationDelay: '1.5s' 
+          }}
+        ></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <Badge variant="outline" className="mb-6 bg-primary/10 text-primary border-primary/20">
             <Zap className="h-3 w-3 mr-1" />

@@ -1,0 +1,109 @@
+import { useState, useEffect } from 'react';
+
+export interface TemperatureData {
+  temperature: number;
+  temperatureRange: 'cool' | 'medium' | 'hot';
+  colors: {
+    background: string;
+    primary: string;
+    accent: string;
+    foreground: string;
+  };
+  animationIntensity: number;
+}
+
+const getTemperatureColors = (temp: number): TemperatureData['colors'] => {
+  if (temp <= 45) {
+    // Cool: Yellow-green to purple light green to dark green
+    const ratio = (temp - 30) / 15;
+    return {
+      background: `linear-gradient(135deg, hsl(${60 + ratio * 60}, ${80 - ratio * 20}%, ${70 - ratio * 30}%), hsl(${120 + ratio * 30}, ${60 + ratio * 10}%, ${65 - ratio * 25}%), hsl(150, 70%, 40%))`,
+      primary: `hsl(${120 + ratio * 30}, ${60 + ratio * 10}%, ${50 - ratio * 10}%)`,
+      accent: `hsl(${90 + ratio * 30}, ${70 - ratio * 10}%, ${60 - ratio * 20}%)`,
+      foreground: temp < 38 ? 'hsl(220, 15%, 15%)' : 'hsl(0, 0%, 100%)'
+    };
+  } else if (temp <= 65) {
+    // Medium: Warm transition colors
+    const ratio = (temp - 45) / 20;
+    return {
+      background: `linear-gradient(135deg, hsl(${45 - ratio * 15}, ${80 + ratio * 5}%, ${60 + ratio * 10}%), hsl(${30 - ratio * 15}, ${75 + ratio * 10}%, ${55 + ratio * 5}%))`,
+      primary: `hsl(${35 - ratio * 20}, ${75 + ratio * 10}%, ${50 + ratio * 5}%)`,
+      accent: `hsl(${25 - ratio * 10}, ${80 + ratio * 5}%, ${55 + ratio * 5}%)`,
+      foreground: 'hsl(0, 0%, 100%)'
+    };
+  } else {
+    // Hot: Red-orange to purple gradient
+    const ratio = (temp - 65) / 25;
+    return {
+      background: `linear-gradient(135deg, hsl(${0 + ratio * 15}, ${85 + ratio * 5}%, ${60 - ratio * 10}%), hsl(${15 + ratio * 10}, ${90 - ratio * 10}%, ${50 - ratio * 5}%), hsl(${280 + ratio * 20}, ${70 - ratio * 10}%, ${45 - ratio * 10}%))`,
+      primary: `hsl(${5 + ratio * 15}, ${85 + ratio * 5}%, ${55 - ratio * 10}%)`,
+      accent: `hsl(${290 + ratio * 20}, ${75 - ratio * 15}%, ${50 - ratio * 10}%)`,
+      foreground: 'hsl(0, 0%, 100%)'
+    };
+  }
+};
+
+const getTemperatureRange = (temp: number): TemperatureData['temperatureRange'] => {
+  if (temp <= 45) return 'cool';
+  if (temp <= 65) return 'medium';
+  return 'hot';
+};
+
+const getAnimationIntensity = (temp: number): number => {
+  // Higher temperature = faster animations (0.5x to 2x speed)
+  return 0.5 + (temp - 30) / 60 * 1.5;
+};
+
+export const useCPUTemperature = (): TemperatureData => {
+  const [temperature, setTemperature] = useState(45);
+
+  useEffect(() => {
+    let animationFrame: number;
+    let lastTime = 0;
+    const baseTemp = 45;
+    const maxVariation = 35;
+
+    const updateTemperature = (currentTime: number) => {
+      if (currentTime - lastTime > 2000) { // Update every 2 seconds
+        // Simulate CPU temperature using performance metrics and time-based variation
+        const timeVariation = Math.sin(currentTime / 10000) * 0.5; // Slow sine wave
+        const performanceLoad = performance.now() % 1000 / 1000; // Pseudo-random based on performance
+        const hardwareCores = navigator.hardwareConcurrency || 4;
+        const memoryUsage = (navigator as any).deviceMemory ? (navigator as any).deviceMemory / 8 : 0.5;
+        
+        // Calculate simulated temperature (30°C to 90°C)
+        const simulatedTemp = baseTemp + 
+          (timeVariation * maxVariation * 0.3) + 
+          (performanceLoad * maxVariation * 0.4) + 
+          (Math.sin(currentTime / 5000) * maxVariation * 0.2) +
+          ((hardwareCores - 4) * 2) +
+          (memoryUsage * 8);
+          
+        const clampedTemp = Math.max(30, Math.min(90, simulatedTemp));
+        setTemperature(clampedTemp);
+        lastTime = currentTime;
+      }
+      
+      animationFrame = requestAnimationFrame(updateTemperature);
+    };
+
+    animationFrame = requestAnimationFrame(updateTemperature);
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, []);
+
+  const temperatureRange = getTemperatureRange(temperature);
+  const colors = getTemperatureColors(temperature);
+  const animationIntensity = getAnimationIntensity(temperature);
+
+  return {
+    temperature,
+    temperatureRange,
+    colors,
+    animationIntensity
+  };
+};
