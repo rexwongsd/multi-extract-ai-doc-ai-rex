@@ -103,8 +103,16 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
     // Filter data to only include entries with valid phone numbers
     const validData = filteredData.filter(item => item.phoneNumber);
 
+    // Sort data by name type in the specified order: Chinese, Malay, Indian, Other
+    const nameTypeOrder = ['Chinese', 'Malay', 'Indian', 'Other'];
+    const sortedData = validData.sort((a, b) => {
+      const aIndex = nameTypeOrder.indexOf(a.nameType);
+      const bIndex = nameTypeOrder.indexOf(b.nameType);
+      return aIndex - bIndex;
+    });
+
     // Format data for 2-column Excel export
-    const excelData = validData.map(row => ({
+    const excelData = sortedData.map(row => ({
       'Name/Company': `${row.name} (${row.nameType})`,
       'Phone Number': row.phoneNumber
     }));
@@ -122,7 +130,7 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
 
     toast({
       title: t.exportSuccess,
-      description: `${validData.length} records exported to Excel`,
+      description: `${sortedData.length} records exported to Excel`,
     });
   };
 
