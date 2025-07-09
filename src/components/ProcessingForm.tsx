@@ -4,14 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Play, Settings } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Play, Settings, FileText, Search, Zap, CheckCircle } from "lucide-react";
 import type { Language } from "./LanguageSwitcher";
+import type { ProcessingProgress } from "@/utils/fileProcessor";
 
 interface ProcessingFormProps {
   language: Language;
   files: File[];
   onProcess: (prompt: string) => void;
   isProcessing: boolean;
+  processingProgress?: ProcessingProgress | null;
 }
 
 const translations = {
@@ -59,7 +62,7 @@ const translations = {
   }
 };
 
-export const ProcessingForm = ({ language, files, onProcess, isProcessing }: ProcessingFormProps) => {
+export const ProcessingForm = ({ language, files, onProcess, isProcessing, processingProgress }: ProcessingFormProps) => {
   const [prompt, setPrompt] = useState("");
   const t = translations[language];
 
@@ -71,6 +74,17 @@ export const ProcessingForm = ({ language, files, onProcess, isProcessing }: Pro
   };
 
   const examplePrompts = [t.example1, t.example2, t.example3];
+
+  const getStageIcon = (stage: string) => {
+    switch (stage) {
+      case 'reading': return FileText;
+      case 'extracting': return Search;
+      case 'processing': return Zap;
+      case 'classifying': return Settings;
+      case 'complete': return CheckCircle;
+      default: return FileText;
+    }
+  };
 
   return (
     <Card className="shadow-card">
@@ -132,6 +146,25 @@ export const ProcessingForm = ({ language, files, onProcess, isProcessing }: Pro
               {isProcessing ? t.processing : t.process}
             </Button>
           </div>
+          
+          {/* Processing Progress */}
+          {isProcessing && processingProgress && (
+            <div className="mt-6 pt-6 border-t space-y-3">
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const IconComponent = getStageIcon(processingProgress.stage);
+                  return <IconComponent className="h-5 w-5 text-primary animate-pulse" />;
+                })()}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">{processingProgress.message}</span>
+                    <span className="text-xs text-muted-foreground">{Math.round(processingProgress.progress)}%</span>
+                  </div>
+                  <Progress value={processingProgress.progress} className="h-2" />
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       </CardContent>
     </Card>

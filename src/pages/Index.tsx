@@ -8,15 +8,8 @@ import { ProcessingForm } from "@/components/ProcessingForm";
 import { ResultsTable } from "@/components/ResultsTable";
 import { Brain, FileText, Zap, Globe, Shield, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { processFiles, type ExtractedData, type ProcessingProgress } from "@/utils/fileProcessor";
 import heroImage from "@/assets/hero-bg.jpg";
-
-interface ExtractedData {
-  id: string;
-  name: string;
-  phoneNumber: string;
-  nameType: 'Chinese' | 'Malay' | 'Indian' | 'Other';
-  source: string;
-}
 
 const translations = {
   en: {
@@ -75,6 +68,7 @@ const Index = () => {
   const [extractedData, setExtractedData] = useState<ExtractedData[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState<'upload' | 'process' | 'results'>('upload');
+  const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
   const { toast } = useToast();
   const t = translations[language];
 
@@ -87,101 +81,34 @@ const Index = () => {
     }
   };
 
-  // Mock phone number normalization function
-  const normalizePhoneNumber = (phone: string): string => {
-    // Remove all non-digit characters
-    const digits = phone.replace(/\D/g, '');
-    
-    // Malaysian phone number patterns
-    if (digits.startsWith('60')) {
-      // Remove country code and format
-      const number = digits.substring(2);
-      if (number.length >= 9) {
-        return `0${number.substring(0, number.length)}`;
-      }
-    } else if (digits.startsWith('0')) {
-      // Already starts with 0
-      return digits.substring(0, 10);
-    } else if (digits.length >= 8) {
-      // Add leading 0
-      return `0${digits.substring(0, 9)}`;
-    }
-    
-    return '';
-  };
-
-  // Mock name classification function
-  const classifyName = (name: string): 'Chinese' | 'Malay' | 'Indian' | 'Other' => {
-    const lowerName = name.toLowerCase();
-    
-    // Simple classification based on common patterns
-    if (/[李王张刘陈杨黄吴赵周]/.test(name) || 
-        /\b(lim|tan|lee|wong|ng|ong|teo|goh|koh)\b/i.test(lowerName)) {
-      return 'Chinese';
-    } else if (/\b(ahmad|ali|hassan|ibrahim|mohamed|abdullah|ismail|rahman)\b/i.test(lowerName) ||
-               /\b(siti|nur|fatimah|noraini|rohani)\b/i.test(lowerName)) {
-      return 'Malay';
-    } else if (/\b(kumar|raj|devi|lakshmi|ravi|suresh|anand|prakash)\b/i.test(lowerName)) {
-      return 'Indian';
-    }
-    
-    return 'Other';
-  };
-
   const handleProcess = async (prompt: string) => {
     setIsProcessing(true);
+    setProcessingProgress(null);
     
     try {
-      // Simulate AI processing delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const results = await processFiles(files, (progress) => {
+        setProcessingProgress(progress);
+      });
       
-      // Mock extracted data - in real implementation, this would call your AI service
-      const mockData: ExtractedData[] = [
-        {
-          id: '1',
-          name: 'Ahmad Hassan',
-          phoneNumber: normalizePhoneNumber('60123456789'),
-          nameType: classifyName('Ahmad Hassan'),
-          source: files[0]?.name || 'sample.xlsx'
-        },
-        {
-          id: '2',
-          name: 'Lim Wei Ming',
-          phoneNumber: normalizePhoneNumber('012-345-6789'),
-          nameType: classifyName('Lim Wei Ming'),
-          source: files[0]?.name || 'sample.xlsx'
-        },
-        {
-          id: '3',
-          name: 'Rajesh Kumar',
-          phoneNumber: normalizePhoneNumber('+60 123 456 789'),
-          nameType: classifyName('Rajesh Kumar'),
-          source: files[0]?.name || 'sample.xlsx'
-        },
-        {
-          id: '4',
-          name: 'Siti Noraini',
-          phoneNumber: normalizePhoneNumber('123456789'),
-          nameType: classifyName('Siti Noraini'),
-          source: files[0]?.name || 'sample.xlsx'
-        }
-      ];
-      
-      setExtractedData(mockData);
+      setExtractedData(results);
       setCurrentStep('results');
+      
+      const validPhoneNumbers = results.filter(d => d.phoneNumber && d.phoneNumber.length > 0).length;
       
       toast({
         title: "Processing Complete",
-        description: `Extracted ${mockData.length} records with ${mockData.filter(d => d.phoneNumber).length} valid phone numbers`,
+        description: `Extracted ${results.length} records with ${validPhoneNumbers} valid phone numbers`,
       });
     } catch (error) {
+      console.error('Processing error:', error);
       toast({
         title: "Processing Failed",
-        description: "An error occurred during document processing",
+        description: error instanceof Error ? error.message : "An error occurred during document processing",
         variant: "destructive"
       });
     } finally {
       setIsProcessing(false);
+      setProcessingProgress(null);
     }
   };
 
@@ -305,6 +232,7 @@ const Index = () => {
                   files={files} 
                   onProcess={handleProcess}
                   isProcessing={isProcessing}
+                  processingProgress={processingProgress}
                 />
               </div>
             )}
