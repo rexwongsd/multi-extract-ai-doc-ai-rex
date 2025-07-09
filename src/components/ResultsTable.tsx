@@ -100,8 +100,8 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
   const exportToExcel = () => {
     if (filteredData.length === 0) return;
 
-    // Filter data to only include entries with valid phone numbers
-    const validData = filteredData.filter(item => item.phoneNumber);
+    // Filter data to only include entries with valid phone numbers (excluding numbers starting with 03)
+    const validData = filteredData.filter(item => item.phoneNumber && !item.phoneNumber.startsWith('03'));
 
     // Sort data by name type in the specified order: Chinese, Malay, Indian, Other
     const nameTypeOrder = ['Chinese', 'Malay', 'Indian', 'Other'];
