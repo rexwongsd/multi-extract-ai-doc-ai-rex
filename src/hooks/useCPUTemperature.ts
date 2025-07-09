@@ -10,6 +10,7 @@ export interface TemperatureData {
     foreground: string;
   };
   animationIntensity: number;
+  transitionProgress: number;
 }
 
 // Color sequence: Dark Blue → Purple → Light Green → Yellow
@@ -59,20 +60,109 @@ const getAnimationIntensity = (stepIndex: number): number => {
   return intensities[stepIndex % intensities.length];
 };
 
+// Helper function to parse HSL string and extract values
+const parseHSL = (hslString: string): { h: number; s: number; l: number } => {
+  const match = hslString.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+  if (!match) return { h: 0, s: 0, l: 0 };
+  return {
+    h: parseInt(match[1]),
+    s: parseInt(match[2]),
+    l: parseInt(match[3])
+  };
+};
+
+// Helper function to interpolate between two HSL colors
+const interpolateHSL = (color1: string, color2: string, progress: number): string => {
+  const hsl1 = parseHSL(color1);
+  const hsl2 = parseHSL(color2);
+  
+  // Handle hue interpolation (shortest path around color wheel)
+  let hDiff = hsl2.h - hsl1.h;
+  if (hDiff > 180) hDiff -= 360;
+  if (hDiff < -180) hDiff += 360;
+  
+  const h = Math.round(hsl1.h + hDiff * progress);
+  const s = Math.round(hsl1.s + (hsl2.s - hsl1.s) * progress);
+  const l = Math.round(hsl1.l + (hsl2.l - hsl1.l) * progress);
+  
+  return `hsl(${h}, ${s}%, ${l}%)`;
+};
+
+// Function to interpolate background gradients
+const interpolateGradient = (grad1: string, grad2: string, progress: number): string => {
+  // Extract HSL colors from gradient strings
+  const hsl1Matches = grad1.match(/hsl\(\d+,\s*\d+%,\s*\d+%\)/g) || [];
+  const hsl2Matches = grad2.match(/hsl\(\d+,\s*\d+%,\s*\d+%\)/g) || [];
+  
+  if (hsl1Matches.length === 0 || hsl2Matches.length === 0) return grad1;
+  
+  const interpolatedColors = hsl1Matches.map((color1, index) => {
+    const color2 = hsl2Matches[index] || hsl2Matches[0];
+    return interpolateHSL(color1, color2, progress);
+  });
+  
+  return `linear-gradient(135deg, ${interpolatedColors.join(', ')})`;
+};
+
+// Function to get interpolated colors between current and next step
+const getInterpolatedColors = (currentIndex: number, nextIndex: number, progress: number): TemperatureData['colors'] => {
+  const currentColors = colorSteps[currentIndex % colorSteps.length];
+  const nextColors = colorSteps[nextIndex % colorSteps.length];
+  
+  return {
+    background: interpolateGradient(currentColors.background, nextColors.background, progress),
+    primary: interpolateHSL(currentColors.primary, nextColors.primary, progress),
+    accent: interpolateHSL(currentColors.accent, nextColors.accent, progress),
+    foreground: interpolateHSL(currentColors.foreground, nextColors.foreground, progress)
+  };
+};
+
 export const useCPUTemperature = (): TemperatureData => {
   const [colorStepIndex, setColorStepIndex] = useState(0);
   const [temperature, setTemperature] = useState(45);
+  const [transitionProgress, setTransitionProgress] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     let timeoutId: number;
-    let lastTime = 0;
+    let animationId: number;
 
-    const updateColorStep = () => {
-      // Generate random interval between 3000-5000ms (3-5 seconds) for slower transitions
+    const startTransition = () => {
+      setIsTransitioning(true);
+      setTransitionProgress(0);
+      
+      const duration = 2000; // 2 seconds for transition
+      const startTime = performance.now();
+      
+      const animateTransition = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Use easing function for smoother transition
+        const easedProgress = 1 - Math.cos((progress * Math.PI) / 2);
+        setTransitionProgress(easedProgress);
+        
+        if (progress < 1) {
+          animationId = requestAnimationFrame(animateTransition);
+        } else {
+          // Transition complete, move to next color step
+          setColorStepIndex(prev => (prev + 1) % colorSteps.length);
+          setIsTransitioning(false);
+          setTransitionProgress(0);
+          
+          // Schedule next color change after a pause
+          scheduleNextTransition();
+        }
+      };
+      
+      animationId = requestAnimationFrame(animateTransition);
+    };
+
+    const scheduleNextTransition = () => {
+      // Wait 3-5 seconds before starting next transition
       const randomInterval = Math.random() * 2000 + 3000;
       
       timeoutId = window.setTimeout(() => {
-        setColorStepIndex(prev => (prev + 1) % colorSteps.length);
         // Update temperature for display (keeping existing temp simulation)
         const currentTime = performance.now();
         const timeVariation = Math.sin(currentTime / 10000) * 0.5;
@@ -92,28 +182,36 @@ export const useCPUTemperature = (): TemperatureData => {
         const clampedTemp = Math.max(30, Math.min(90, simulatedTemp));
         setTemperature(clampedTemp);
         
-        updateColorStep(); // Schedule next update
+        startTransition();
       }, randomInterval);
     };
 
     // Start the cycle
-    updateColorStep();
+    scheduleNextTransition();
 
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
     };
   }, []);
 
   const temperatureRange = getTemperatureRange(colorStepIndex);
-  const colors = getColorsForStep(colorStepIndex);
   const animationIntensity = getAnimationIntensity(colorStepIndex);
+  
+  // Get colors based on transition state
+  const colors = isTransitioning 
+    ? getInterpolatedColors(colorStepIndex, (colorStepIndex + 1) % colorSteps.length, transitionProgress)
+    : getColorsForStep(colorStepIndex);
 
   return {
     temperature,
     temperatureRange,
     colors,
-    animationIntensity
+    animationIntensity,
+    transitionProgress
   };
 };
