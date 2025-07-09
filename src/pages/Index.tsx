@@ -10,7 +10,6 @@ import { Brain, FileText, Zap, Globe, Shield, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { processFiles, type ExtractedData, type ProcessingProgress } from "@/utils/fileProcessor";
 import heroImage from "@/assets/hero-bg.jpg";
-
 const translations = {
   en: {
     title: "AI Document Intelligence",
@@ -61,7 +60,6 @@ const translations = {
     noFiles: "Belum ada fail dimuat naik"
   }
 };
-
 const Index = () => {
   const [language, setLanguage] = useState<Language>('en');
   const [files, setFiles] = useState<File[]>([]);
@@ -69,9 +67,10 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState<'upload' | 'process' | 'results'>('upload');
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const t = translations[language];
-
   const handleFilesUpload = (uploadedFiles: File[]) => {
     setFiles(uploadedFiles);
     if (uploadedFiles.length > 0) {
@@ -80,24 +79,19 @@ const Index = () => {
       setCurrentStep('upload');
     }
   };
-
   const handleProcess = async (prompt: string) => {
     setIsProcessing(true);
     setProcessingProgress(null);
-    
     try {
-      const results = await processFiles(files, (progress) => {
+      const results = await processFiles(files, progress => {
         setProcessingProgress(progress);
       });
-      
       setExtractedData(results);
       setCurrentStep('results');
-      
       const validPhoneNumbers = results.filter(d => d.phoneNumber && d.phoneNumber.length > 0).length;
-      
       toast({
         title: "Processing Complete",
-        description: `Extracted ${results.length} records with ${validPhoneNumbers} valid phone numbers`,
+        description: `Extracted ${results.length} records with ${validPhoneNumbers} valid phone numbers`
       });
     } catch (error) {
       console.error('Processing error:', error);
@@ -111,42 +105,32 @@ const Index = () => {
       setProcessingProgress(null);
     }
   };
-
-  const features = [
-    {
-      icon: Brain,
-      title: t.features.ai,
-      description: "Advanced AI algorithms extract and classify data automatically"
-    },
-    {
-      icon: Globe,
-      title: t.features.multilingual,
-      description: "Support for English, Chinese, and Bahasa Malaysia"
-    },
-    {
-      icon: Zap,
-      title: t.features.processing,
-      description: "Fast and accurate document processing with real-time results"
-    },
-    {
-      icon: Download,
-      title: t.features.export,
-      description: "Export processed data in CSV format with proper formatting"
-    },
-    {
-      icon: Shield,
-      title: t.features.security,
-      description: "Secure processing with data privacy protection"
-    },
-    {
-      icon: FileText,
-      title: t.features.format,
-      description: "Automatic validation and formatting of Malaysian phone numbers"
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-secondary">
+  const features = [{
+    icon: Brain,
+    title: t.features.ai,
+    description: "Advanced AI algorithms extract and classify data automatically"
+  }, {
+    icon: Globe,
+    title: t.features.multilingual,
+    description: "Support for English, Chinese, and Bahasa Malaysia"
+  }, {
+    icon: Zap,
+    title: t.features.processing,
+    description: "Fast and accurate document processing with real-time results"
+  }, {
+    icon: Download,
+    title: t.features.export,
+    description: "Export processed data in CSV format with proper formatting"
+  }, {
+    icon: Shield,
+    title: t.features.security,
+    description: "Secure processing with data privacy protection"
+  }, {
+    icon: FileText,
+    title: t.features.format,
+    description: "Automatic validation and formatting of Malaysian phone numbers"
+  }];
+  return <div className="min-h-screen bg-gradient-secondary">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -163,14 +147,11 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section 
-        className="relative py-20 overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(rgba(240, 245, 255, 0.9), rgba(240, 245, 255, 0.9)), url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
+      <section className="relative py-20 overflow-hidden" style={{
+      backgroundImage: `linear-gradient(rgba(240, 245, 255, 0.9), rgba(240, 245, 255, 0.9)), url(${heroImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }}>
         <div className="container mx-auto px-4 text-center">
           <Badge variant="outline" className="mb-6 bg-primary/10 text-primary border-primary/20">
             <Zap className="h-3 w-3 mr-1" />
@@ -185,11 +166,9 @@ const Index = () => {
           <p className="text-lg mb-12 max-w-3xl mx-auto">
             {t.description}
           </p>
-          <Button 
-            size="lg" 
-            className="bg-gradient-primary hover:shadow-glow hover:scale-105 transform transition-all duration-300"
-            onClick={() => document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' })}
-          >
+          <Button size="lg" className="bg-gradient-primary hover:shadow-glow hover:scale-105 transform transition-all duration-300" onClick={() => document.getElementById('upload-section')?.scrollIntoView({
+          behavior: 'smooth'
+        })}>
             <FileText className="h-5 w-5 mr-2" />
             {t.getStarted}
           </Button>
@@ -200,8 +179,7 @@ const Index = () => {
       <section className="py-16 bg-background/50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-card transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+            {features.map((feature, index) => <Card key={index} className="group hover:shadow-card transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
                 <CardContent className="p-6 text-center">
                   <div className="p-3 bg-gradient-primary rounded-full inline-block mb-4 group-hover:scale-110 transition-transform duration-300">
                     <feature.icon className="h-6 w-6 text-white" />
@@ -209,8 +187,7 @@ const Index = () => {
                   <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                   <p className="text-muted-foreground text-sm">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -225,17 +202,9 @@ const Index = () => {
             </div>
 
             {/* Step 2: Processing Configuration */}
-            {files.length > 0 && (
-              <div className={`${currentStep === 'process' ? 'lg:col-span-2' : ''}`}>
-                <ProcessingForm 
-                  language={language} 
-                  files={files} 
-                  onProcess={handleProcess}
-                  isProcessing={isProcessing}
-                  processingProgress={processingProgress}
-                />
-              </div>
-            )}
+            {files.length > 0 && <div className={`${currentStep === 'process' ? 'lg:col-span-2' : ''}`}>
+                <ProcessingForm language={language} files={files} onProcess={handleProcess} isProcessing={isProcessing} processingProgress={processingProgress} />
+              </div>}
 
             {/* Progress Indicator */}
             <div className="lg:col-span-1">
@@ -263,39 +232,27 @@ const Index = () => {
                     </div>
                   </div>
                   
-                  {files.length === 0 && (
-                    <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                  {files.length === 0 && <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                       <p className="text-sm text-muted-foreground">{t.noFiles}</p>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
             </div>
           </div>
 
           {/* Results Section */}
-          {extractedData.length > 0 && (
-            <div className="mt-8">
-              <ResultsTable 
-                language={language} 
-                data={extractedData} 
-                isLoading={isProcessing}
-              />
-            </div>
-          )}
+          {extractedData.length > 0 && <div className="mt-8">
+              <ResultsTable language={language} data={extractedData} isLoading={isProcessing} />
+            </div>}
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-card border-t py-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">
-            © 2024 DocAI Pro - AI-Powered Document Intelligence Platform
-          </p>
+          <p className="text-muted-foreground">© 2025 DocAI Pro - AI-Powered By Rex Wong Document Intelligence Platform</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
