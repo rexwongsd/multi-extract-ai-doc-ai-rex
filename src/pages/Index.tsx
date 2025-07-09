@@ -198,7 +198,7 @@ const Index = () => {
         </div>
       )}
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-gradient-primary rounded-lg">
@@ -223,7 +223,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative py-12 overflow-hidden">
         {/* Dynamic Animated Background */}
         <div 
           className="absolute inset-0 opacity-30 animate-temp-pulse"
@@ -290,7 +290,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-background/50">
+      <section className="py-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => <Card key={index} className="group hover:shadow-card transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
@@ -307,7 +307,7 @@ const Index = () => {
       </section>
 
       {/* Main Processing Section */}
-      <section id="upload-section" className="py-16">
+      <section id="upload-section" className="py-8">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Step 1: File Upload */}
@@ -362,7 +362,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-card border-t py-8">
+      <footer className="bg-card/30 backdrop-blur-sm py-6">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground">© 2025 DocAI Pro - AI-Powered By Rex Wong Document Intelligence Platform</p>
         </div>
