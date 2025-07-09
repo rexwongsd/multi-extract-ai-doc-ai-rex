@@ -168,7 +168,8 @@ const Index = () => {
       style={{ 
         background: isDarkMode ? 'hsl(var(--background))' : 'var(--temp-background, var(--gradient-secondary))',
         color: isDarkMode ? 'hsl(var(--foreground))' : 'var(--temp-foreground, hsl(var(--foreground)))',
-        backgroundSize: '400% 400%'
+        backgroundSize: '400% 400%',
+        transition: 'background 2s ease-in-out, color 2s ease-in-out'
       }}
     >
       {/* Global Animated Background */}

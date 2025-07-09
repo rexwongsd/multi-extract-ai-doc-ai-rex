@@ -68,8 +68,8 @@ export const useCPUTemperature = (): TemperatureData => {
     let lastTime = 0;
 
     const updateColorStep = () => {
-      // Generate random interval between 1000-3000ms (1-3 seconds)
-      const randomInterval = Math.random() * 2000 + 1000;
+      // Generate random interval between 3000-5000ms (3-5 seconds) for slower transitions
+      const randomInterval = Math.random() * 2000 + 3000;
       
       timeoutId = window.setTimeout(() => {
         setColorStepIndex(prev => (prev + 1) % colorSteps.length);
