@@ -12,66 +12,76 @@ export interface TemperatureData {
   animationIntensity: number;
 }
 
-const getTemperatureColors = (temp: number): TemperatureData['colors'] => {
-  if (temp <= 45) {
-    // Cold: Dark blue to light green shining gradient
-    const ratio = (temp - 30) / 15;
-    return {
-      background: `linear-gradient(135deg, hsl(220, ${70 + ratio * 20}%, ${25 + ratio * 15}%), hsl(180, ${60 + ratio * 20}%, ${40 + ratio * 20}%), hsl(120, ${80 + ratio * 10}%, ${60 + ratio * 15}%))`,
-      primary: `hsl(180, ${65 + ratio * 15}%, ${45 + ratio * 20}%)`,
-      accent: `hsl(120, ${75 + ratio * 15}%, ${55 + ratio * 20}%)`,
-      foreground: `hsl(0, 0%, ${85 + ratio * 10}%)`
-    };
-  } else if (temp <= 65) {
-    // Medium: Transition between cold and hot
-    const ratio = (temp - 45) / 20;
-    return {
-      background: `linear-gradient(135deg, hsl(${220 + ratio * 40}, ${70 - ratio * 20}%, ${40 - ratio * 15}%), hsl(${240 + ratio * 20}, ${65 - ratio * 15}%, ${35 - ratio * 10}%))`,
-      primary: `hsl(${230 + ratio * 30}, ${70 - ratio * 20}%, ${40 - ratio * 15}%)`,
-      accent: `hsl(${250 + ratio * 10}, ${65 - ratio * 15}%, ${45 - ratio * 10}%)`,
-      foreground: `hsl(0, 0%, ${85 - ratio * 15}%)`
-    };
-  } else {
-    // Hot: Dark purple to blue gradient
-    const ratio = (temp - 65) / 25;
-    return {
-      background: `linear-gradient(135deg, hsl(${270 - ratio * 30}, ${80 + ratio * 10}%, ${20 + ratio * 10}%), hsl(${240 - ratio * 20}, ${75 + ratio * 15}%, ${25 + ratio * 15}%), hsl(${210 - ratio * 10}, ${70 + ratio * 20}%, ${30 + ratio * 20}%))`,
-      primary: `hsl(${260 - ratio * 25}, ${75 + ratio * 15}%, ${25 + ratio * 15}%)`,
-      accent: `hsl(${230 - ratio * 15}, ${80 + ratio * 10}%, ${35 + ratio * 15}%)`,
-      foreground: `hsl(0, 0%, ${90 + ratio * 10}%)`
-    };
+// Color sequence: Dark Blue → Purple → Light Green → Yellow
+const colorSteps = [
+  {
+    // Dark Blue
+    background: 'linear-gradient(135deg, hsl(220, 80%, 20%), hsl(210, 70%, 25%), hsl(200, 60%, 30%))',
+    primary: 'hsl(220, 80%, 20%)',
+    accent: 'hsl(210, 70%, 25%)',
+    foreground: 'hsl(0, 0%, 90%)'
+  },
+  {
+    // Purple
+    background: 'linear-gradient(135deg, hsl(280, 70%, 40%), hsl(270, 75%, 45%), hsl(260, 65%, 50%))',
+    primary: 'hsl(280, 70%, 40%)',
+    accent: 'hsl(270, 75%, 45%)',
+    foreground: 'hsl(0, 0%, 95%)'
+  },
+  {
+    // Light Green
+    background: 'linear-gradient(135deg, hsl(120, 60%, 70%), hsl(130, 55%, 75%), hsl(140, 50%, 80%))',
+    primary: 'hsl(120, 60%, 70%)',
+    accent: 'hsl(130, 55%, 75%)',
+    foreground: 'hsl(0, 0%, 20%)'
+  },
+  {
+    // Yellow
+    background: 'linear-gradient(135deg, hsl(60, 90%, 75%), hsl(55, 85%, 80%), hsl(50, 80%, 85%))',
+    primary: 'hsl(60, 90%, 75%)',
+    accent: 'hsl(55, 85%, 80%)',
+    foreground: 'hsl(0, 0%, 15%)'
   }
+];
+
+const getColorsForStep = (stepIndex: number): TemperatureData['colors'] => {
+  return colorSteps[stepIndex % colorSteps.length];
 };
 
-const getTemperatureRange = (temp: number): TemperatureData['temperatureRange'] => {
-  if (temp <= 45) return 'cool';
-  if (temp <= 65) return 'medium';
-  return 'hot';
+const getTemperatureRange = (stepIndex: number): TemperatureData['temperatureRange'] => {
+  const ranges: TemperatureData['temperatureRange'][] = ['cool', 'medium', 'hot', 'cool'];
+  return ranges[stepIndex % ranges.length];
 };
 
-const getAnimationIntensity = (temp: number): number => {
-  // Higher temperature = faster animations (0.5x to 2x speed)
-  return 0.5 + (temp - 30) / 60 * 1.5;
+const getAnimationIntensity = (stepIndex: number): number => {
+  // Variable animation intensity for each step
+  const intensities = [0.8, 1.2, 1.5, 1.0];
+  return intensities[stepIndex % intensities.length];
 };
 
 export const useCPUTemperature = (): TemperatureData => {
+  const [colorStepIndex, setColorStepIndex] = useState(0);
   const [temperature, setTemperature] = useState(45);
 
   useEffect(() => {
-    let animationFrame: number;
+    let timeoutId: number;
     let lastTime = 0;
-    const baseTemp = 45;
-    const maxVariation = 35;
 
-    const updateTemperature = (currentTime: number) => {
-      if (currentTime - lastTime > 2000) { // Update every 2 seconds
-        // Simulate CPU temperature using performance metrics and time-based variation
-        const timeVariation = Math.sin(currentTime / 10000) * 0.5; // Slow sine wave
-        const performanceLoad = performance.now() % 1000 / 1000; // Pseudo-random based on performance
+    const updateColorStep = () => {
+      // Generate random interval between 1000-3000ms (1-3 seconds)
+      const randomInterval = Math.random() * 2000 + 1000;
+      
+      timeoutId = window.setTimeout(() => {
+        setColorStepIndex(prev => (prev + 1) % colorSteps.length);
+        // Update temperature for display (keeping existing temp simulation)
+        const currentTime = performance.now();
+        const timeVariation = Math.sin(currentTime / 10000) * 0.5;
+        const performanceLoad = performance.now() % 1000 / 1000;
         const hardwareCores = navigator.hardwareConcurrency || 4;
         const memoryUsage = (navigator as any).deviceMemory ? (navigator as any).deviceMemory / 8 : 0.5;
         
-        // Calculate simulated temperature (30°C to 90°C)
+        const baseTemp = 45;
+        const maxVariation = 35;
         const simulatedTemp = baseTemp + 
           (timeVariation * maxVariation * 0.3) + 
           (performanceLoad * maxVariation * 0.4) + 
@@ -81,24 +91,24 @@ export const useCPUTemperature = (): TemperatureData => {
           
         const clampedTemp = Math.max(30, Math.min(90, simulatedTemp));
         setTemperature(clampedTemp);
-        lastTime = currentTime;
-      }
-      
-      animationFrame = requestAnimationFrame(updateTemperature);
+        
+        updateColorStep(); // Schedule next update
+      }, randomInterval);
     };
 
-    animationFrame = requestAnimationFrame(updateTemperature);
+    // Start the cycle
+    updateColorStep();
 
     return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
     };
   }, []);
 
-  const temperatureRange = getTemperatureRange(temperature);
-  const colors = getTemperatureColors(temperature);
-  const animationIntensity = getAnimationIntensity(temperature);
+  const temperatureRange = getTemperatureRange(colorStepIndex);
+  const colors = getColorsForStep(colorStepIndex);
+  const animationIntensity = getAnimationIntensity(colorStepIndex);
 
   return {
     temperature,
