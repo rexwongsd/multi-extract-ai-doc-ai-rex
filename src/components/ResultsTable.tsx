@@ -14,6 +14,7 @@ import {
 import { Download, Search, Filter, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Language } from "./LanguageSwitcher";
+import * as XLSX from 'xlsx';
 
 interface ExtractedData {
   id: string;
@@ -96,33 +97,32 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
     return matchesSearch && matchesFilter;
   });
 
-  const exportToCSV = () => {
+  const exportToExcel = () => {
     if (filteredData.length === 0) return;
 
-    const headers = [t.name, t.phone, t.type, t.source];
-    const csvContent = [
-      headers.join(','),
-      ...filteredData.map(row => [
-        `"${row.name}"`,
-        `"${row.phoneNumber}"`,
-        `"${row.nameType}"`,
-        `"${row.source}"`
-      ].join(','))
-    ].join('\n');
+    // Filter data to only include entries with valid phone numbers
+    const validData = filteredData.filter(item => item.phoneNumber);
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `extracted_data_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Format data for 2-column Excel export
+    const excelData = validData.map(row => ({
+      'Name/Company': `${row.name} (${row.nameType})`,
+      'Phone Number': row.phoneNumber
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Extracted Data');
+
+    // Download Excel file
+    const fileName = `extracted_data_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
 
     toast({
       title: t.exportSuccess,
-      description: `${filteredData.length} records exported`,
+      description: `${validData.length} records exported to Excel`,
     });
   };
 
@@ -183,7 +183,7 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
-          <Button onClick={exportToCSV} disabled={filteredData.length === 0} variant="outline">
+          <Button onClick={exportToExcel} disabled={filteredData.length === 0} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             {t.export}
           </Button>
