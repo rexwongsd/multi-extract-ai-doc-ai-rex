@@ -37,6 +37,26 @@ export const normalizePhoneNumber = (phone: string): string => {
   return '';
 };
 
+// Malaysian telco number validation function
+export const isMalaysianTelcoNumber = (phone: string): boolean => {
+  const malaysianTelcoPrefixes = [
+    // Maxis
+    '012', '017', '0142', '0143', '0147', '0148',
+    // Celcom  
+    '013', '019', '0145', '0149',
+    // Digi
+    '010', '016', '0140', '0141',
+    // U Mobile
+    '018', '0144', '0146', 
+    // TM/Unifi Mobile
+    '011', '015',
+    // Other operators
+    '0154', '0156', '0158', '0162', '0166', '0167', '0168'
+  ];
+  
+  return malaysianTelcoPrefixes.some(prefix => phone.startsWith(prefix));
+};
+
 // Name classification function
 export const classifyName = (name: string): 'Chinese' | 'Malay' | 'Indian' | 'Other' => {
   const lowerName = name.toLowerCase();
@@ -88,7 +108,7 @@ export const processExcelFile = async (file: File, onProgress?: (progress: Proce
               const phoneMatch = cellValue.match(/[\d\s\-\+\(\)]{8,}/);
               if (phoneMatch) {
                 const normalizedPhone = normalizePhoneNumber(cellValue);
-                if (normalizedPhone) {
+                if (normalizedPhone && isMalaysianTelcoNumber(normalizedPhone)) {
                   // Look for name in adjacent cells
                   const possibleNames = [
                     row[colIndex - 1], // Left cell
@@ -115,7 +135,7 @@ export const processExcelFile = async (file: File, onProgress?: (progress: Proce
               if (namePhoneMatch) {
                 const [, name, phone] = namePhoneMatch;
                 const normalizedPhone = normalizePhoneNumber(phone);
-                if (normalizedPhone && name.trim().length > 2) {
+                if (normalizedPhone && isMalaysianTelcoNumber(normalizedPhone) && name.trim().length > 2) {
                   results.push({
                     id: `${recordId++}`,
                     name: name.trim(),
@@ -179,7 +199,7 @@ export const processTextFile = async (file: File, onProgress?: (progress: Proces
             const [, name, phone] = match;
             const normalizedPhone = normalizePhoneNumber(phone);
             
-            if (normalizedPhone && name.trim().length > 2) {
+            if (normalizedPhone && isMalaysianTelcoNumber(normalizedPhone) && name.trim().length > 2) {
               results.push({
                 id: `${recordId++}`,
                 name: name.trim(),
@@ -197,7 +217,7 @@ export const processTextFile = async (file: File, onProgress?: (progress: Proces
             const [, phone, name] = match;
             const normalizedPhone = normalizePhoneNumber(phone);
             
-            if (normalizedPhone && name.trim().length > 2) {
+            if (normalizedPhone && isMalaysianTelcoNumber(normalizedPhone) && name.trim().length > 2) {
               // Check if we already have this phone number
               const exists = results.some(r => r.phoneNumber === normalizedPhone);
               if (!exists) {
@@ -223,7 +243,7 @@ export const processTextFile = async (file: File, onProgress?: (progress: Proces
               const phone1 = normalizePhoneNumber(part1);
               const phone2 = normalizePhoneNumber(part2);
               
-              if (phone1 && part2.length > 2 && !/\d/.test(part2)) {
+              if (phone1 && isMalaysianTelcoNumber(phone1) && part2.length > 2 && !/\d/.test(part2)) {
                 results.push({
                   id: `${recordId++}`,
                   name: part2,
@@ -231,7 +251,7 @@ export const processTextFile = async (file: File, onProgress?: (progress: Proces
                   nameType: classifyName(part2),
                   source: file.name
                 });
-              } else if (phone2 && part1.length > 2 && !/\d/.test(part1)) {
+              } else if (phone2 && isMalaysianTelcoNumber(phone2) && part1.length > 2 && !/\d/.test(part1)) {
                 results.push({
                   id: `${recordId++}`,
                   name: part1,

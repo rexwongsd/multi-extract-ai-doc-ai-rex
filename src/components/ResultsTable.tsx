@@ -100,8 +100,21 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
   const exportToExcel = () => {
     if (filteredData.length === 0) return;
 
-    // Filter data to only include entries with valid phone numbers (excluding numbers starting with 03)
-    const validData = filteredData.filter(item => item.phoneNumber && !item.phoneNumber.startsWith('03'));
+    // Filter data to only include entries with Malaysian telco numbers
+    const validData = filteredData.filter(item => {
+      if (!item.phoneNumber) return false;
+      
+      const malaysianTelcoPrefixes = [
+        '012', '017', '0142', '0143', '0147', '0148', // Maxis
+        '013', '019', '0145', '0149', // Celcom  
+        '010', '016', '0140', '0141', // Digi
+        '018', '0144', '0146', // U Mobile
+        '011', '015', // TM/Unifi Mobile
+        '0154', '0156', '0158', '0162', '0166', '0167', '0168' // Other operators
+      ];
+      
+      return malaysianTelcoPrefixes.some(prefix => item.phoneNumber.startsWith(prefix));
+    });
 
     // Sort data by name type in the specified order: Chinese, Malay, Indian, Other
     const nameTypeOrder = ['Chinese', 'Malay', 'Indian', 'Other'];
@@ -163,7 +176,18 @@ export const ResultsTable = ({ language, data, isLoading }: ResultsTableProps) =
               {t.totalRecords}: {data.length}
             </Badge>
             <Badge variant="outline" className="bg-success/10 text-success">
-              {t.validNumbers}: {data.filter(item => item.phoneNumber).length}
+              {t.validNumbers}: {data.filter(item => {
+                if (!item.phoneNumber) return false;
+                const malaysianTelcoPrefixes = [
+                  '012', '017', '0142', '0143', '0147', '0148', // Maxis
+                  '013', '019', '0145', '0149', // Celcom  
+                  '010', '016', '0140', '0141', // Digi
+                  '018', '0144', '0146', // U Mobile
+                  '011', '015', // TM/Unifi Mobile
+                  '0154', '0156', '0158', '0162', '0166', '0167', '0168' // Other operators
+                ];
+                return malaysianTelcoPrefixes.some(prefix => item.phoneNumber.startsWith(prefix));
+              }).length}
             </Badge>
           </div>
         </div>
