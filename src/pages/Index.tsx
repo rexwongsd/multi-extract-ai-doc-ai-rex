@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { LanguageSwitcher, type Language } from "@/components/LanguageSwitcher";
 import { FileUpload } from "@/components/FileUpload";
 import { ProcessingForm } from "@/components/ProcessingForm";
 import { ResultsTable } from "@/components/ResultsTable";
-import { Brain, FileText, Zap, Globe, Shield, Download } from "lucide-react";
+import { Brain, FileText, Zap, Globe, Shield, Download, Moon, Sun } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { processFiles, type ExtractedData, type ProcessingProgress } from "@/utils/fileProcessor";
 import heroImage from "@/assets/hero-bg.jpg";
@@ -67,6 +67,24 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState<'upload' | 'process' | 'results'>('upload');
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check for saved theme preference or default to light mode
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const shouldUseDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    
+    setIsDarkMode(shouldUseDark);
+    document.documentElement.classList.toggle('dark', shouldUseDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    document.documentElement.classList.toggle('dark', newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+  };
   const {
     toast
   } = useToast();
@@ -142,7 +160,17 @@ const Index = () => {
               DocAI Pro
             </span>
           </div>
-          <LanguageSwitcher currentLanguage={language} onLanguageChange={setLanguage} />
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-9 w-9"
+            >
+              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <LanguageSwitcher currentLanguage={language} onLanguageChange={setLanguage} />
+          </div>
         </div>
       </header>
 
