@@ -127,40 +127,40 @@ export const useCPUTemperature = (): TemperatureData => {
     let timeoutId: number;
     let animationId: number;
 
-    const startTransition = () => {
-      setIsTransitioning(true);
-      setTransitionProgress(0);
+  const startTransition = () => {
+    setIsTransitioning(true);
+    setTransitionProgress(0);
+    
+    const duration = 20000; // 20 seconds for very smooth transition
+    const startTime = performance.now();
+    
+    const animateTransition = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
       
-      const duration = 2000; // 2 seconds for transition
-      const startTime = performance.now();
+      // Use very smooth easing function
+      const easedProgress = 0.5 * (1 + Math.sin(Math.PI * progress - Math.PI / 2));
+      setTransitionProgress(easedProgress);
       
-      const animateTransition = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+      if (progress < 1) {
+        animationId = requestAnimationFrame(animateTransition);
+      } else {
+        // Transition complete, move to next color step
+        setColorStepIndex(prev => (prev + 1) % colorSteps.length);
+        setIsTransitioning(false);
+        setTransitionProgress(0);
         
-        // Use easing function for smoother transition
-        const easedProgress = 1 - Math.cos((progress * Math.PI) / 2);
-        setTransitionProgress(easedProgress);
-        
-        if (progress < 1) {
-          animationId = requestAnimationFrame(animateTransition);
-        } else {
-          // Transition complete, move to next color step
-          setColorStepIndex(prev => (prev + 1) % colorSteps.length);
-          setIsTransitioning(false);
-          setTransitionProgress(0);
-          
-          // Schedule next color change after a pause
-          scheduleNextTransition();
-        }
-      };
-      
-      animationId = requestAnimationFrame(animateTransition);
+        // Schedule next color change after a pause
+        scheduleNextTransition();
+      }
     };
+    
+    animationId = requestAnimationFrame(animateTransition);
+  };
 
     const scheduleNextTransition = () => {
-      // Wait 3-5 seconds before starting next transition
-      const randomInterval = Math.random() * 2000 + 3000;
+      // Wait 100-120 seconds (1.6-2 minutes) before starting next transition
+      const randomInterval = Math.random() * 20000 + 100000;
       
       timeoutId = window.setTimeout(() => {
         // Update temperature for display (keeping existing temp simulation)
