@@ -148,7 +148,9 @@ const Index = () => {
     title: t.features.format,
     description: "Automatic validation and formatting of Malaysian phone numbers"
   }];
-  return <div className="min-h-screen bg-gradient-secondary">
+   return <div className="min-h-screen bg-gradient-secondary relative overflow-hidden">
+      {/* Global Background Animation */}
+      <div className="fixed inset-0 bg-gradient-primary opacity-5 animate-pulse-glow pointer-events-none"></div>
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -175,12 +177,20 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden" style={{
-      backgroundImage: `linear-gradient(rgba(240, 245, 255, 0.9), rgba(240, 245, 255, 0.9)), url(${heroImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center'
-    }}>
-        <div className="container mx-auto px-4 text-center">
+      <section className="relative py-20 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-hero opacity-65 animate-pulse-glow"></div>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(rgba(240, 245, 255, 0.6), rgba(240, 245, 255, 0.6)), url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}></div>
+        
+        {/* Floating Animation Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-float"></div>
+        <div className="absolute top-40 right-20 w-32 h-32 bg-accent/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-primary-glow/25 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
           <Badge variant="outline" className="mb-6 bg-primary/10 text-primary border-primary/20">
             <Zap className="h-3 w-3 mr-1" />
             AI-Powered Document Processing
