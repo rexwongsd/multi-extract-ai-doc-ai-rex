@@ -14,31 +14,31 @@ export interface TemperatureData {
 
 const getTemperatureColors = (temp: number): TemperatureData['colors'] => {
   if (temp <= 45) {
-    // Cool: Yellow-green to purple light green to dark green
+    // Cold: Dark blue to light green shining gradient
     const ratio = (temp - 30) / 15;
     return {
-      background: `linear-gradient(135deg, hsl(${60 + ratio * 60}, ${80 - ratio * 20}%, ${70 - ratio * 30}%), hsl(${120 + ratio * 30}, ${60 + ratio * 10}%, ${65 - ratio * 25}%), hsl(150, 70%, 40%))`,
-      primary: `hsl(${120 + ratio * 30}, ${60 + ratio * 10}%, ${50 - ratio * 10}%)`,
-      accent: `hsl(${90 + ratio * 30}, ${70 - ratio * 10}%, ${60 - ratio * 20}%)`,
-      foreground: temp < 38 ? 'hsl(220, 15%, 15%)' : 'hsl(0, 0%, 100%)'
+      background: `linear-gradient(135deg, hsl(220, ${70 + ratio * 20}%, ${25 + ratio * 15}%), hsl(180, ${60 + ratio * 20}%, ${40 + ratio * 20}%), hsl(120, ${80 + ratio * 10}%, ${60 + ratio * 15}%))`,
+      primary: `hsl(180, ${65 + ratio * 15}%, ${45 + ratio * 20}%)`,
+      accent: `hsl(120, ${75 + ratio * 15}%, ${55 + ratio * 20}%)`,
+      foreground: `hsl(0, 0%, ${85 + ratio * 10}%)`
     };
   } else if (temp <= 65) {
-    // Medium: Warm transition colors
+    // Medium: Transition between cold and hot
     const ratio = (temp - 45) / 20;
     return {
-      background: `linear-gradient(135deg, hsl(${45 - ratio * 15}, ${80 + ratio * 5}%, ${60 + ratio * 10}%), hsl(${30 - ratio * 15}, ${75 + ratio * 10}%, ${55 + ratio * 5}%))`,
-      primary: `hsl(${35 - ratio * 20}, ${75 + ratio * 10}%, ${50 + ratio * 5}%)`,
-      accent: `hsl(${25 - ratio * 10}, ${80 + ratio * 5}%, ${55 + ratio * 5}%)`,
-      foreground: 'hsl(0, 0%, 100%)'
+      background: `linear-gradient(135deg, hsl(${220 + ratio * 40}, ${70 - ratio * 20}%, ${40 - ratio * 15}%), hsl(${240 + ratio * 20}, ${65 - ratio * 15}%, ${35 - ratio * 10}%))`,
+      primary: `hsl(${230 + ratio * 30}, ${70 - ratio * 20}%, ${40 - ratio * 15}%)`,
+      accent: `hsl(${250 + ratio * 10}, ${65 - ratio * 15}%, ${45 - ratio * 10}%)`,
+      foreground: `hsl(0, 0%, ${85 - ratio * 15}%)`
     };
   } else {
-    // Hot: Red-orange to purple gradient
+    // Hot: Dark purple to blue gradient
     const ratio = (temp - 65) / 25;
     return {
-      background: `linear-gradient(135deg, hsl(${0 + ratio * 15}, ${85 + ratio * 5}%, ${60 - ratio * 10}%), hsl(${15 + ratio * 10}, ${90 - ratio * 10}%, ${50 - ratio * 5}%), hsl(${280 + ratio * 20}, ${70 - ratio * 10}%, ${45 - ratio * 10}%))`,
-      primary: `hsl(${5 + ratio * 15}, ${85 + ratio * 5}%, ${55 - ratio * 10}%)`,
-      accent: `hsl(${290 + ratio * 20}, ${75 - ratio * 15}%, ${50 - ratio * 10}%)`,
-      foreground: 'hsl(0, 0%, 100%)'
+      background: `linear-gradient(135deg, hsl(${270 - ratio * 30}, ${80 + ratio * 10}%, ${20 + ratio * 10}%), hsl(${240 - ratio * 20}, ${75 + ratio * 15}%, ${25 + ratio * 15}%), hsl(${210 - ratio * 10}, ${70 + ratio * 20}%, ${30 + ratio * 20}%))`,
+      primary: `hsl(${260 - ratio * 25}, ${75 + ratio * 15}%, ${25 + ratio * 15}%)`,
+      accent: `hsl(${230 - ratio * 15}, ${80 + ratio * 10}%, ${35 + ratio * 15}%)`,
+      foreground: `hsl(0, 0%, ${90 + ratio * 10}%)`
     };
   }
 };
