@@ -174,10 +174,10 @@ const Index = () => {
     >
       {/* Global Animated Background */}
       <div 
-        className="fixed inset-0 opacity-20 animate-gradient-shift pointer-events-none"
+        className="fixed inset-0 opacity-50 animate-gradient-shift pointer-events-none"
         style={{
           background: isDarkMode 
-            ? 'linear-gradient(-45deg, hsl(var(--primary)/0.1), hsl(var(--accent)/0.1), hsl(var(--primary)/0.05), hsl(var(--accent)/0.05))'
+            ? 'linear-gradient(-45deg, hsl(var(--primary)/0.2), hsl(var(--accent)/0.2), hsl(var(--primary)/0.15), hsl(var(--accent)/0.15))'
             : 'var(--temp-background, var(--gradient-primary))',
           backgroundSize: '400% 400%'
         }}
@@ -227,13 +227,13 @@ const Index = () => {
       <section className="relative py-12 overflow-hidden">
         {/* Dynamic Animated Background */}
         <div 
-          className="absolute inset-0 opacity-30 animate-temp-pulse"
+          className="absolute inset-0 opacity-60 animate-temp-pulse"
           style={{
-            background: isDarkMode ? 'hsl(var(--primary)/0.1)' : 'var(--temp-background, var(--gradient-hero))'
+            background: isDarkMode ? 'hsl(var(--primary)/0.2)' : 'var(--temp-background, var(--gradient-hero))'
           }}
         ></div>
         <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(rgba(240, 245, 255, ${isDarkMode ? '0.1' : '0.4'}), rgba(240, 245, 255, ${isDarkMode ? '0.1' : '0.4'})), url(${heroImage})`,
+          backgroundImage: `linear-gradient(rgba(15, 20, 30, ${isDarkMode ? '0.6' : '0.7'}), rgba(20, 25, 35, ${isDarkMode ? '0.6' : '0.7'})), url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}></div>
@@ -242,28 +242,28 @@ const Index = () => {
         <div 
           className="absolute top-20 left-10 w-20 h-20 rounded-full blur-xl animate-temp-float"
           style={{ 
-            backgroundColor: isDarkMode ? 'hsl(var(--primary)/0.2)' : 'var(--temp-primary, hsl(var(--primary)))/0.3',
+            backgroundColor: isDarkMode ? 'hsl(var(--primary)/0.3)' : 'var(--temp-primary, hsl(var(--primary)))/0.5',
             animationDelay: '0s' 
           }}
         ></div>
         <div 
           className="absolute top-40 right-20 w-32 h-32 rounded-full blur-2xl animate-temp-float" 
           style={{ 
-            backgroundColor: isDarkMode ? 'hsl(var(--accent)/0.15)' : 'var(--temp-accent, hsl(var(--accent)))/0.25',
+            backgroundColor: isDarkMode ? 'hsl(var(--accent)/0.25)' : 'var(--temp-accent, hsl(var(--accent)))/0.4',
             animationDelay: '1s' 
           }}
         ></div>
         <div 
           className="absolute bottom-20 left-1/4 w-24 h-24 rounded-full blur-xl animate-temp-float" 
           style={{ 
-            backgroundColor: isDarkMode ? 'hsl(var(--primary-glow)/0.2)' : 'var(--temp-primary, hsl(var(--primary-glow)))/0.35',
+            backgroundColor: isDarkMode ? 'hsl(var(--primary-glow)/0.3)' : 'var(--temp-primary, hsl(var(--primary-glow)))/0.5',
             animationDelay: '2s' 
           }}
         ></div>
         <div 
           className="absolute top-1/2 right-1/3 w-16 h-16 rounded-full blur-lg animate-temp-float" 
           style={{ 
-            backgroundColor: isDarkMode ? 'hsl(var(--accent)/0.1)' : 'var(--temp-accent, hsl(var(--accent)))/0.2',
+            backgroundColor: isDarkMode ? 'hsl(var(--accent)/0.2)' : 'var(--temp-accent, hsl(var(--accent)))/0.35',
             animationDelay: '1.5s' 
           }}
         ></div>
