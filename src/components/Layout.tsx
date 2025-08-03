@@ -15,7 +15,7 @@ const Layout = ({ children }: LayoutProps) => {
       <nav className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-foreground">Data Export Manager</h1>
+            <h1 className="text-xl font-bold text-foreground">Create Value International</h1>
             <div className="flex space-x-4">
               <Link
                 to="/"
@@ -46,6 +46,11 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="container mx-auto px-4 py-6">
         {children}
       </main>
+      <footer className="border-t border-border bg-card py-4">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          © 2024 Create Value International Sdn.Bhd. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 };
