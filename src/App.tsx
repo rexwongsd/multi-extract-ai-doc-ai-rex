@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import ExportPage from './pages/ExportPage';
+import ExtractionPage from './pages/ExtractionPage';
 import './App.css';
 
 const queryClient = new QueryClient();
@@ -14,7 +15,8 @@ function App() {
       <Router>
         <Layout>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<ExtractionPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/export" element={<ExportPage />} />
           </Routes>
         </Layout>
