@@ -54,7 +54,12 @@ const ExtractionForm = ({ onExtract }: ExtractionFormProps) => {
         throw new Error(data?.error || 'Extraction failed');
       }
 
+      console.log('Extraction response:', data);
+      
       if (data.data) {
+        console.log('Persons found:', data.data.persons?.length || 0);
+        console.log('Companies found:', data.data.companies?.length || 0);
+        console.log('Full data:', JSON.stringify(data.data, null, 2));
         onExtract(data.data);
       }
     } catch (err) {
