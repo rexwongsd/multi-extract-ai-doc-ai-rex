@@ -13,6 +13,8 @@ serve(async (req) => {
   try {
     const { text } = await req.json();
     
+    console.log("Received text length:", text?.length || 0);
+    
     if (!text || typeof text !== 'string') {
       return new Response(
         JSON.stringify({ success: false, error: 'Text content is required' }),
@@ -55,15 +57,17 @@ serve(async (req) => {
 - Distinguish between person names and company names
 - Return confidence score (high/medium/low) for each extraction
 
-Return JSON format:
+You MUST return ONLY valid JSON in this exact format with no extra text:
 {
   "persons": [
-    { "name": "FULL NAME HERE", "confidence": "high/medium/low", "type": "chinese/malay/indian/western/other" }
+    { "name": "FULL NAME HERE", "confidence": "high", "type": "chinese" }
   ],
   "companies": [
-    { "name": "COMPANY NAME HERE", "confidence": "high/medium/low" }
+    { "name": "COMPANY NAME HERE", "confidence": "high" }
   ]
 }`;
+
+    console.log("Calling AI Gateway...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -104,6 +108,8 @@ Return JSON format:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
+    console.log("Raw AI response:", content);
+
     if (!content) {
       throw new Error("No response from AI");
     }
@@ -114,10 +120,34 @@ Return JSON format:
       // Try to extract JSON from the response (it might be wrapped in markdown code blocks)
       const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/```\s*([\s\S]*?)\s*```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : content;
+      
+      console.log("Parsing JSON:", jsonStr.trim().substring(0, 200));
+      
       extractedData = JSON.parse(jsonStr.trim());
+      
+      // Ensure the data structure is correct
+      if (!extractedData.persons) {
+        extractedData.persons = [];
+      }
+      if (!extractedData.companies) {
+        extractedData.companies = [];
+      }
+      
+      // Validate and normalize the data
+      extractedData.persons = extractedData.persons.map((p: any) => ({
+        name: String(p.name || '').trim(),
+        confidence: ['high', 'medium', 'low'].includes(p.confidence) ? p.confidence : 'medium',
+        type: ['chinese', 'malay', 'indian', 'western', 'other'].includes(p.type) ? p.type : 'other'
+      })).filter((p: any) => p.name.length > 0);
+      
+      extractedData.companies = extractedData.companies.map((c: any) => ({
+        name: String(c.name || '').trim(),
+        confidence: ['high', 'medium', 'low'].includes(c.confidence) ? c.confidence : 'medium'
+      })).filter((c: any) => c.name.length > 0);
+      
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
-      // Return raw content if parsing fails
+      console.error("Failed to parse AI response:", parseError, content);
+      // Return empty results with the raw response for debugging
       extractedData = {
         persons: [],
         companies: [],
@@ -125,7 +155,7 @@ Return JSON format:
       };
     }
 
-    console.log("Extraction successful:", extractedData);
+    console.log("Final extraction result:", JSON.stringify(extractedData));
 
     return new Response(
       JSON.stringify({ success: true, data: extractedData }),
